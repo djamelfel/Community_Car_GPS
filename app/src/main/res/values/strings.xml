@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">Community Car GPS</string>
     <string name="action_settings">Settings</string>
+    <string name="locate">Locate</string>
+    <string name="provider_enabled">The provider %s is now enabled</string>
+    <string name="provider_disabled">The provider %s is now disabled</string>
+    <string name="provider_new_status">The provider %1$s has now a new status %2$s</string>
+    <string name="provider">Provider : </string>
+    <string name="gps">GPS : </string>
 </resources>
