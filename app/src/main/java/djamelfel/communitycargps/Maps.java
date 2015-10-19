@@ -2,12 +2,14 @@ package djamelfel.communitycargps;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 import org.osmdroid.api.IMapController;
@@ -23,6 +25,7 @@ public class Maps extends Activity implements LocationListener, View.OnClickList
     private String provider;
     private ToggleButton gpsTButton;
     private ToggleButton providerTButton;
+    private Button settingsMenu;
 
 
     @Override
@@ -52,6 +55,9 @@ public class Maps extends Activity implements LocationListener, View.OnClickList
         providerTButton.setEnabled(false);
         provider = "network";
         findViewById(R.id.provider).setOnClickListener(this);
+
+        settingsMenu = (Button) findViewById(R.id.settingsMenu);
+        findViewById(R.id.settingsMenu).setOnClickListener(this);
     }
 
     @Override
@@ -79,6 +85,10 @@ public class Maps extends Activity implements LocationListener, View.OnClickList
                     provider = "gps";
                 }
                 enablePosition();
+                break;
+            case R.id.settingsMenu:
+                Intent intent = new Intent(Maps.this, DisplaySettings.class);
+                startActivity(intent);
                 break;
             default:
                 break;
