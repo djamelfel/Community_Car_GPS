@@ -8,4 +8,8 @@
     <string name="provider">Provider : </string>
     <string name="gps">GPS : </string>
     <string name="title_activity_settings">Settings</string>
+    <string name="setting_distanceText">Distance : </string>
+    <string name="setting_tempsDonnee">Temps limite d\'utilisation des données : </string>
+    <string name="button_reset">Remettre à zéro</string>
+    <string name="button_save">Enregistrer</string>
 </resources>
