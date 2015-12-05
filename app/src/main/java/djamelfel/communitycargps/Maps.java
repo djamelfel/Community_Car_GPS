@@ -26,6 +26,8 @@ public class Maps extends Activity implements LocationListener, View.OnClickList
     private ToggleButton gpsTButton;
     private ToggleButton providerTButton;
     private Button settingsMenu;
+    final String EXTRA_DISTANCE = "distance_voulue";
+    private String distance_settings;
 
 
     @Override
@@ -58,6 +60,10 @@ public class Maps extends Activity implements LocationListener, View.OnClickList
 
         settingsMenu = (Button) findViewById(R.id.settingsMenu);
         findViewById(R.id.settingsMenu).setOnClickListener(this);
+
+        Intent intent = getIntent();
+        distance_settings = intent.getStringExtra(EXTRA_DISTANCE);
+        //System.out.println(distance_settings);
     }
 
     @Override
@@ -88,6 +94,7 @@ public class Maps extends Activity implements LocationListener, View.OnClickList
                 break;
             case R.id.settingsMenu:
                 Intent intent = new Intent(Maps.this, DisplaySettings.class);
+                intent.putExtra(EXTRA_DISTANCE, distance_settings);
                 startActivity(intent);
                 break;
             default:

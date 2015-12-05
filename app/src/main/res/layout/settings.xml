@@ -1,14 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:orientation="vertical">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
 
     <TextView
+        android:text="@string/setting_distanceText"
+        android:id="@+id/labelDistance"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="My settings :"
-        android:id="@+id/textView"
-        android:textColor="#000000" />
-</LinearLayout>
+        android:layout_alignBaseline="@+id/choosenDistance"
+        android:paddingRight="5dp" />
+    <EditText
+        android:editable="true"
+        android:id="@+id/choosenDistance"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/labelDistance"
+        android:inputType="number"/>
+    <TextView
+        android:text="@string/setting_tempsDonnee"
+        android:id="@+id/labelDonnee"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/labelDistance"
+        android:paddingRight="5dp"
+        android:layout_marginTop="50dp"/>
+    <EditText
+        android:editable="true"
+        android:id="@+id/choosenTime"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/labelDonnee"
+        android:layout_below="@+id/choosenDistance"
+        android:layout_alignBaseline="@+id/labelDonnee"/>
+    <Button
+        android:text="@string/button_reset"
+        android:id="@+id/bReset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/labelDonnee"
+        android:layout_marginTop="50dp"/>
+    <Button
+        android:text="@string/button_save"
+        android:id="@+id/bSave"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/choosenTime"
+        android:layout_toRightOf="@id/bReset"
+        android:layout_alignBaseline="@+id/bReset"/>
+
+</RelativeLayout>
