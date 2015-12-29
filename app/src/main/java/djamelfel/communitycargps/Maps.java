@@ -42,6 +42,7 @@ public class Maps extends Activity implements LocationListener, View.OnClickList
         mapView.setBuiltInZoomControls(true);
         mapView.setMultiTouchControls(true);
         mapView.setMinZoomLevel(7);
+        mapView.setMaxZoomLevel(30);
 
         //limiter la carte uniquement a un seul modele
         //BoundingBoxE6 bbox = new BoundingBoxE6(0.0, 100.0, 0.0, 100.0);
