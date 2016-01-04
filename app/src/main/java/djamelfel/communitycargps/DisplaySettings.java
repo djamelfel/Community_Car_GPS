@@ -1,10 +1,12 @@
 package djamelfel.communitycargps;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 
 /**
@@ -12,33 +14,81 @@ import android.widget.EditText;
  */
 public class DisplaySettings extends Activity implements View.OnClickListener{
 
-    private EditText choosenDistance;
-    private Button bReset;
-    private Button bSave;
-    final String EXTRA_DISTANCE = "distance_voulue";
+    private EditText distance;
+    private EditText timeLimite;
+    private EditText password;
+
+    private Settings settings;
 
     public void onCreate(Bundle saveInstanceState){
         super.onCreate(saveInstanceState);
-        setContentView(R.layout.settings);
-        choosenDistance = (EditText) findViewById(R.id.choosenDistance);
-        bReset = (Button) findViewById(R.id.bReset);
+        setContentView(R.layout.activity_settings);
+
+        distance = (EditText) findViewById(R.id.distance);
+        timeLimite = (EditText) findViewById(R.id.timeLimite);
+        password = (EditText) findViewById(R.id.password);
+
         findViewById(R.id.bReset).setOnClickListener(this);
-        bSave = (Button) findViewById(R.id.bSave);
         findViewById(R.id.bSave).setOnClickListener(this);
+
+        Bundle extras = getIntent().getExtras();
+        settings = extras.getParcelable("settings");
+    }
+
+    private void saveSettings() {
+        if (!distance.getText().toString().isEmpty())
+            settings.setDistance(Integer.parseInt(distance.getText().toString()));
+        if (!timeLimite.getText().toString().isEmpty())
+            settings.setTimeLimite(Integer.parseInt(timeLimite.getText().toString()));
+        if (!password.getText().toString().isEmpty()) {
+            //TODO: Request database
+        }
     }
 
     public void onClick(View v) {
         switch(v.getId()){
             case R.id.bReset:
-                choosenDistance.setText(String.valueOf(10));
+                distance.setText("");
+                timeLimite.setText("");
+                password.setText("");
                 break;
             case R.id.bSave:
-                Intent intentDisplaySettings = new Intent(DisplaySettings.this, Maps.class);
-                intentDisplaySettings.putExtra(EXTRA_DISTANCE, choosenDistance.getText().toString());
-                startActivity(intentDisplaySettings);
+                saveSettings();
+                Intent intent = new Intent(DisplaySettings.this, Maps.class);
+                intent.putExtra("settings", settings);
+                startActivity(intent);
                 break;
             default:
                 break;
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(DisplaySettings.this, Maps.class);
+        intent.putExtra("settings", settings);
+        startActivity(intent);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                Intent intent = new Intent(DisplaySettings.this, Maps.class);
+                intent.putExtra("settings", settings);
+                startActivity(intent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 }

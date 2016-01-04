@@ -13,8 +13,10 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -36,12 +38,7 @@ public class Maps extends Activity implements MapViewConstants, LocationListener
     private MapView mapView;
     private IMapController mapController;
     private ToggleButton gpsTButton;
-    private Button settingsMenu;
-    final String EXTRA_DISTANCE = "distance_voulue";
-    private String distance_settings;
-
-    private MapOverlay mmapOverlay = null;
-
+    private Settings settings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,24 +57,49 @@ public class Maps extends Activity implements MapViewConstants, LocationListener
 
         //limiter la carte uniquement a un seul modele
         //BoundingBoxE6 bbox = new BoundingBoxE6(0.0, 100.0, 0.0, 100.0);
-        //mapview.setScrollableAreaLimit(bbox);
+        //mapView.setScrollableAreaLimit(bbox);
 
         mapController = mapView.getController();
         mapController.setZoom(9);
 
-        mmapOverlay = new MapOverlay(this);
+        MapOverlay mmapOverlay = new MapOverlay(this);
         List<Overlay> listOfOverlays = mapView.getOverlays();
         listOfOverlays.add(mmapOverlay);
 
         gpsTButton = (ToggleButton) findViewById(R.id.gps);
         findViewById(R.id.gps).setOnClickListener(this);
 
-        settingsMenu = (Button) findViewById(R.id.settingsMenu);
-        findViewById(R.id.settingsMenu).setOnClickListener(this);
+        Bundle extras = getIntent().getExtras();
+        if(extras != null)
+            settings = extras.getParcelable("settings");
+        else
+            settings = new Settings();
+    }
 
-        Intent intent = getIntent();
-        distance_settings = intent.getStringExtra(EXTRA_DISTANCE);
-        //System.out.println(distance_settings);
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        /*
+        menu.add(Menu.NONE, R.id.action_settings, Menu.NONE, R.string.setting).setIcon(R.drawable
+
+                .settings_icon_32dp);
+*/
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_maps, menu);
+        return true;
+        //return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                Intent intent = new Intent(Maps.this, DisplaySettings.class);
+                intent.putExtra("settings", settings);
+                startActivity(intent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
@@ -100,11 +122,6 @@ public class Maps extends Activity implements MapViewConstants, LocationListener
                 } else {
                     disablePosition();
                 }
-                break;
-            case R.id.settingsMenu:
-                Intent intent = new Intent(Maps.this, DisplaySettings.class);
-                intent.putExtra(EXTRA_DISTANCE, distance_settings);
-                startActivity(intent);
                 break;
             default:
                 break;
