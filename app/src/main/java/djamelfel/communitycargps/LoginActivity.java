@@ -35,7 +35,7 @@ public class LoginActivity extends ActionBarActivity { //implements LoaderCallba
      * TODO: remove after connecting to a real authentication system.
      */
     private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "test:test", "admin:password"
+            "1234:test", "5678:password"
     };
 
     /**
@@ -107,15 +107,19 @@ public class LoginActivity extends ActionBarActivity { //implements LoaderCallba
             mLoginView.setError(getString(R.string.error_field_required));
             focusView = mLoginView;
             cancel = true;
-        }/* else if (!isLoginValid(Integer.parseInt(login))) {
+        } else if (!isLoginValid(Integer.parseInt(login))) {
             mLoginView.setError(getString(R.string.error_invalid_login));
             focusView = mLoginView;
             cancel = true;
-        }*/
+        }
 
         // Check for a password.
         if (TextUtils.isEmpty(password)) {
             mPasswordView.setError(getString(R.string.error_field_required));
+            focusView = mPasswordView;
+            cancel = true;
+        } else if (!isPasswordValid(password)) {
+            mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
         }
@@ -132,21 +136,22 @@ public class LoginActivity extends ActionBarActivity { //implements LoaderCallba
 
             mSimpleAuthTask = new UserLoginTask(login, password);
             mSimpleAuthTask.execute((Void) null);
-
-            /*UserLoginPostgresql mAuthTask = new UserLoginPostgresql(Integer.parseInt(login),
+            /*
+            UserLoginPostgresql mAuthTask = new UserLoginPostgresql(Integer.parseInt(login),
                     password);
-            mAuthTask.execute();*/
+            mAuthTask.execute();
+            */
         }
     }
 
     private boolean isLoginValid(Integer login) {
-        int x = String.valueOf(login).length();
-        Log.d("number", String.valueOf(x));
-        return true;
+        if (String.valueOf(login).length() == 4)
+            return true;
+        return false;
     }
 
     private boolean isPasswordValid(String password) {
-        return password.length() > 4;
+        return password.length() > 3;
     }
 
     /**
@@ -296,7 +301,7 @@ public class LoginActivity extends ActionBarActivity { //implements LoaderCallba
                 conn.close();
             } catch(Exception e) {
                 Log.d("LOG_TAG", "Failure " + e.getMessage() );
-                return true;
+                return false;
             }
             return true;
         }

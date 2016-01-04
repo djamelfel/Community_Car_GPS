@@ -27,6 +27,4 @@
     <string name="login">Login</string>
     <string name="setting">Settings</string>
     <string name="error_incorrect_login">Le login est incorrect</string>
-    <string name="error_incorrect_password">Le mot de passe est incorrect</string>
-    <string name="error_field_required">Ce champs est nécessaire</string>
 </resources>

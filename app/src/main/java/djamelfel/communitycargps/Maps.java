@@ -13,15 +13,13 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,10 +44,6 @@ public class Maps extends Activity implements MapViewConstants, LocationListener
     private IMapController mapController;
     private ToggleButton gpsTButton;
     private Settings settings;
-    private Button settingsMenu;
-    private Button simulation;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +74,7 @@ public class Maps extends Activity implements MapViewConstants, LocationListener
 
         gpsTButton = (ToggleButton) findViewById(R.id.gps);
         findViewById(R.id.gps).setOnClickListener(this);
+        findViewById(R.id.simulation).setOnClickListener(this);
 
         Bundle extras = getIntent().getExtras();
         if(extras != null)
@@ -90,15 +85,10 @@ public class Maps extends Activity implements MapViewConstants, LocationListener
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        /*
-        menu.add(Menu.NONE, R.id.action_settings, Menu.NONE, R.string.setting).setIcon(R.drawable
-
-                .settings_icon_32dp);
-*/
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_maps, menu);
+
         return true;
-        //return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -112,9 +102,6 @@ public class Maps extends Activity implements MapViewConstants, LocationListener
             default:
                 return super.onOptionsItemSelected(item);
         }
-
-        simulation = (Button) findViewById(R.id.simulation);
-        findViewById(R.id.simulation).setOnClickListener(this);
     }
 
     @Override
@@ -132,19 +119,18 @@ public class Maps extends Activity implements MapViewConstants, LocationListener
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.gps:
-                if(gpsTButton.isChecked()) {
+                if(gpsTButton.isChecked())
                     enablePosition();
-                } else {
+                else
                     disablePosition();
-                }
                 break;
             case R.id.simulation:
-
                 LayoutInflater inflater = getLayoutInflater();
                 View layout = inflater.inflate(R.layout.toast_layout, (ViewGroup) findViewById(R.id.toast_layout_root));
 
                 ImageView image = (ImageView) layout.findViewById(R.id.image);
-                image.setImageDrawable(getResources().getDrawable( getResources().getIdentifier("@mipmap/ic_notification_bell", null, getPackageName()) ));
+                image.setImageDrawable(getResources().getDrawable( getResources().getIdentifier
+                        ("@mipmap/ic_notification_bell", null, getPackageName()) ));
 
                 TextView text = (TextView) layout.findViewById(R.id.text);
                 text.setText("Risque de pluie sur la suite du parcours");
