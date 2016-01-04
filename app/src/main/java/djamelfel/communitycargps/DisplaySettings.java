@@ -17,7 +17,7 @@ public class DisplaySettings extends Activity implements View.OnClickListener{
     private Button bSave;
     final String EXTRA_DISTANCE = "distance_voulue";
 
-    public void onCreate(Bundle saveInstanceState){
+    public void onCreate(Bundle saveInstanceState) {
         super.onCreate(saveInstanceState);
         setContentView(R.layout.settings);
         choosenDistance = (EditText) findViewById(R.id.choosenDistance);

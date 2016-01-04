@@ -3,31 +3,49 @@ package djamelfel.communitycargps;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+
 import org.osmdroid.api.IMapController;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.Projection;
+import org.osmdroid.views.overlay.Overlay;
+import org.osmdroid.views.util.constants.MapViewConstants;
 
-public class Maps extends Activity implements LocationListener, View.OnClickListener {
+import java.util.List;
+
+public class Maps extends Activity implements MapViewConstants, LocationListener, View.OnClickListener {
 
     private LocationManager lManager;
     private Location location;
+    private MapView mapView;
     private IMapController mapController;
-    private String provider;
     private ToggleButton gpsTButton;
-    private ToggleButton providerTButton;
     private Button settingsMenu;
+    private Button simulation;
     final String EXTRA_DISTANCE = "distance_voulue";
     private String distance_settings;
+
+    private MapOverlay mmapOverlay = null;
 
 
     @Override
@@ -37,8 +55,10 @@ public class Maps extends Activity implements LocationListener, View.OnClickList
 
         lManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
 
-        MapView mapView = (MapView) findViewById(R.id.mapview);
+        mapView = (MapView) findViewById(R.id.mapview);
         mapView.setTileSource(TileSourceFactory.MAPNIK);
+
+        /* Permet de zoomer à l'aide de deux doigts */
         mapView.setBuiltInZoomControls(true);
         mapView.setMultiTouchControls(true);
         mapView.setMinZoomLevel(7);
@@ -51,16 +71,18 @@ public class Maps extends Activity implements LocationListener, View.OnClickList
         mapController = mapView.getController();
         mapController.setZoom(9);
 
+        mmapOverlay = new MapOverlay(this);
+        List<Overlay> listOfOverlays = mapView.getOverlays();
+        listOfOverlays.add(mmapOverlay);
+
         gpsTButton = (ToggleButton) findViewById(R.id.gps);
         findViewById(R.id.gps).setOnClickListener(this);
 
-        providerTButton = (ToggleButton) findViewById(R.id.provider);
-        providerTButton.setEnabled(false);
-        provider = "network";
-        findViewById(R.id.provider).setOnClickListener(this);
-
         settingsMenu = (Button) findViewById(R.id.settingsMenu);
         findViewById(R.id.settingsMenu).setOnClickListener(this);
+
+        simulation = (Button) findViewById(R.id.simulation);
+        findViewById(R.id.simulation).setOnClickListener(this);
 
         Intent intent = getIntent();
         distance_settings = intent.getStringExtra(EXTRA_DISTANCE);
@@ -70,7 +92,12 @@ public class Maps extends Activity implements LocationListener, View.OnClickList
     @Override
     public void onLocationChanged(Location location) {
         this.location = location;
-        printLocation();
+
+        GeoPoint startPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+        mapController.setCenter(startPoint);
+        mapController.setZoom(14);
+
+        mapView.invalidate();
     }
 
     @Override
@@ -78,25 +105,34 @@ public class Maps extends Activity implements LocationListener, View.OnClickList
         switch (v.getId()) {
             case R.id.gps:
                 if(gpsTButton.isChecked()) {
-                    providerTButton.setEnabled(true);
                     enablePosition();
                 } else {
-                    providerTButton.setEnabled(false);
                     disablePosition();
                 }
-                break;
-            case R.id.provider:
-                if(providerTButton.getText().equals("Network")) {
-                    provider = "network";
-                } else {
-                    provider = "gps";
-                }
-                enablePosition();
                 break;
             case R.id.settingsMenu:
                 Intent intent = new Intent(Maps.this, DisplaySettings.class);
                 intent.putExtra(EXTRA_DISTANCE, distance_settings);
                 startActivity(intent);
+
+                break;
+            case R.id.simulation:
+
+                LayoutInflater inflater = getLayoutInflater();
+                View layout = inflater.inflate(R.layout.toast_layout, (ViewGroup) findViewById(R.id.toast_layout_root));
+
+                ImageView image = (ImageView) layout.findViewById(R.id.image);
+                image.setImageDrawable(getResources().getDrawable( getResources().getIdentifier("@mipmap/ic_notification_bell", null, getPackageName()) ));
+
+                TextView text = (TextView) layout.findViewById(R.id.text);
+                text.setText("Risque de pluie sur la suite du parcours");
+
+                Toast toast = new Toast(getApplicationContext());
+                toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
+                toast.setDuration(Toast.LENGTH_LONG);
+                toast.setView(layout);
+                toast.show();
+
                 break;
             default:
                 break;
@@ -104,17 +140,11 @@ public class Maps extends Activity implements LocationListener, View.OnClickList
     }
 
     private void enablePosition() {
-        lManager.requestLocationUpdates(provider, 30000, 0, this);
+        lManager.requestLocationUpdates("network", 30000, 0, this);
     }
 
     private void disablePosition() {
         lManager.removeUpdates(this);
-    }
-
-    private void printLocation() {
-        GeoPoint startPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
-        mapController.setCenter(startPoint);
-        mapController.setZoom(14);
     }
 
     @Override
@@ -144,5 +174,42 @@ public class Maps extends Activity implements LocationListener, View.OnClickList
     public void onProviderDisabled(String provider) {
         String msg = String.format(getResources().getString(R.string.provider_disabled), provider);
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    public class MapOverlay extends org.osmdroid.views.overlay.Overlay {
+        Paint lp3;
+        float pisteX;
+        float pisteY;
+        Projection projection;
+        Point pt;
+        GeoPoint gie;
+        Rect rec;
+
+        public MapOverlay(Context ctx) {
+            super(ctx);
+
+            lp3 = new Paint();
+            lp3.setColor(Color.RED);
+            lp3.setAntiAlias(true);
+            lp3.setStyle(Paint.Style.FILL);
+            lp3.setStrokeWidth(1);
+            pt = new Point();
+        }
+
+        @Override
+        protected void draw(Canvas pC, MapView pOsmv, boolean shadow) {
+            if (shadow)
+                return;
+
+            if(location != null) {
+                projection = pOsmv.getProjection();
+                gie = new GeoPoint(location.getLatitude(),location.getLongitude());
+                rec = mapView.getScreenRect(new Rect());
+                projection.toPixels(gie, pt);
+                pisteX = pt.x-rec.left;
+                pisteY = pt.y - rec.top;
+                pC.drawCircle(pisteX, pisteY, 15, lp3);
+            }
+        }
     }
 }

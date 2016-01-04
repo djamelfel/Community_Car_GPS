@@ -4,28 +4,31 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
-import android.app.LoaderManager.LoaderCallbacks;
-
-import android.database.Cursor;
 import android.os.AsyncTask;
-
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
 
 /**
- * A login screen that offers login via email/password.
+ * A login screen that offers login via login/password.
  */
-public class LoginActivity extends ActionBarActivity {
+public class LoginActivity extends ActionBarActivity { //implements LoaderCallbacks<Cursor> {
 
     /**
      * A dummy authentication store containing known user names and passwords.
@@ -34,13 +37,15 @@ public class LoginActivity extends ActionBarActivity {
     private static final String[] DUMMY_CREDENTIALS = new String[]{
             "test:test", "admin:password"
     };
+
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private UserLoginTask mAuthTask = null;
+    private UserLoginTask mSimpleAuthTask = null;
+    private UserLoginPostgresql mAuthTask = null;
 
     // UI references.
-    private EditText mLoginView;
+    private AutoCompleteTextView mLoginView;
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
@@ -50,7 +55,7 @@ public class LoginActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         // Set up the login form.
-        mLoginView = (EditText) findViewById(R.id.login);
+        mLoginView = (AutoCompleteTextView) findViewById(R.id.login);
 
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -64,8 +69,8 @@ public class LoginActivity extends ActionBarActivity {
             }
         });
 
-        Button mLoginButton = (Button) findViewById(R.id.login_button);
-        mLoginButton.setOnClickListener(new OnClickListener() {
+        Button mLoginSignInButton = (Button) findViewById(R.id.login_sign_in_button);
+        mLoginSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogin();
@@ -76,10 +81,9 @@ public class LoginActivity extends ActionBarActivity {
         mProgressView = findViewById(R.id.login_progress);
     }
 
-
     /**
      * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
+     * If there are form errors (invalid login, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
@@ -103,7 +107,11 @@ public class LoginActivity extends ActionBarActivity {
             mLoginView.setError(getString(R.string.error_field_required));
             focusView = mLoginView;
             cancel = true;
-        }
+        }/* else if (!isLoginValid(Integer.parseInt(login))) {
+            mLoginView.setError(getString(R.string.error_invalid_login));
+            focusView = mLoginView;
+            cancel = true;
+        }*/
 
         // Check for a password.
         if (TextUtils.isEmpty(password)) {
@@ -120,11 +128,25 @@ public class LoginActivity extends ActionBarActivity {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(login, password);
-            mAuthTask.execute((Void) null);
 
 
+            mSimpleAuthTask = new UserLoginTask(login, password);
+            mSimpleAuthTask.execute((Void) null);
+
+            /*UserLoginPostgresql mAuthTask = new UserLoginPostgresql(Integer.parseInt(login),
+                    password);
+            mAuthTask.execute();*/
         }
+    }
+
+    private boolean isLoginValid(Integer login) {
+        int x = String.valueOf(login).length();
+        Log.d("number", String.valueOf(x));
+        return true;
+    }
+
+    private boolean isPasswordValid(String password) {
+        return password.length() > 4;
     }
 
     /**
@@ -167,7 +189,7 @@ public class LoginActivity extends ActionBarActivity {
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    public class UserLoginTask extends AsyncTask<Void, Void, String> {
 
         private final String mLogin;
         private final String mPassword;
@@ -178,46 +200,54 @@ public class LoginActivity extends ActionBarActivity {
         }
 
         @Override
-        protected Boolean doInBackground(Void... params) {
+        protected String doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
             try {
                 // Simulate network access.
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
-                return false;
+                return "error";
             }
 
             for (String credential : DUMMY_CREDENTIALS) {
                 String[] pieces = credential.split(":");
                 if (pieces[0].equals(mLogin)) {
                     // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
+                    if(pieces[1].equals(mPassword))
+                        return "success";
+                    else
+                        return "badPassword";
                 }
                 else {
-                    return false;
+                    return "badLogin";
                 }
             }
 
-            return true;
+            return "success";
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
+        protected void onPostExecute(final String success) {
             mAuthTask = null;
 
-            if (success) {
+            if (success == "success") {
                 finish();
 
                 Intent intent = new Intent(LoginActivity. this, Maps.class);
                 startActivity(intent);
+
             } else {
                 showProgress(false);
 
-                //TODO error if bad login / password
-
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+                if(success == "badLogin") {
+                    mLoginView.setError(getString(R.string.error_incorrect_login));
+                    mLoginView.requestFocus();
+                }
+                if(success == "badPassword") {
+                    mPasswordView.setError(getString(R.string.error_incorrect_password));
+                    mPasswordView.requestFocus();
+                }
             }
         }
 
@@ -227,5 +257,63 @@ public class LoginActivity extends ActionBarActivity {
             showProgress(false);
         }
     }
-}
 
+    /**
+     * Represents an asynchronous login/registration task used to authenticate
+     * the user.
+     */
+    public class UserLoginPostgresql extends AsyncTask<Void, Void, Boolean> {
+
+        private final int mLogin;
+        private final String mPassword;
+
+        UserLoginPostgresql(int login, String password) {
+            mLogin = login;
+            mPassword = password;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            try {
+                Class.forName("org.postgresql.Driver");
+                String url = "jdbc:postgresql://192.168.0.14:5432/bus_can";
+                String user = "postgres";
+                String password = "bus_can";
+                Log.d("LOG_TAG", "Connexion ...  !");
+                Connection conn = DriverManager.getConnection(url, user, password);
+                Log.d("LOG_TAG", "... effective !");
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery("Select * from \"Users\"");
+
+                //TODO: Verifier que les donnees saisies sont compatible avec ceux de la bdd
+                while(rs.next()) {
+                    Log.d("LOG_TAG", rs.getString(1) + " " + mLogin);
+                    Log.d("LOG_TAG", rs.getString(2) + " " + mPassword);
+                }
+
+                rs.close();
+                st.close();
+                conn.close();
+            } catch(Exception e) {
+                Log.d("LOG_TAG", "Failure " + e.getMessage() );
+                return true;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            if (success) {
+                finish();
+
+                Intent intent = new Intent(LoginActivity.this, Maps.class);
+                startActivity(intent);
+            } else {
+                showProgress(false);
+
+                mPasswordView.setError(getString(R.string.error_incorrect_password));
+                mPasswordView.requestFocus();
+            }
+        }
+    }
+}

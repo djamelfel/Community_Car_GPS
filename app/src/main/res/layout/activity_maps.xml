@@ -19,19 +19,17 @@
             android:textOff="Off"
             android:textOn="On"/>
 
-        <ToggleButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/provider"
-            android:id="@+id/provider"
-            android:textOff="Network"
-            android:textOn="GPS"/>
-
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Settings"
             android:id="@+id/settingsMenu" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Simulation"
+            android:id="@+id/simulation" />
 
     </LinearLayout>
 

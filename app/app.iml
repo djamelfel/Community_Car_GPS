@@ -83,6 +83,7 @@
     <orderEntry type="jdk" jdkName="Android API 16 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="support-v4-18.0.0" level="project" />
+    <orderEntry type="library" exported="" name="postgresql-9.4.1207" level="project" />
     <orderEntry type="library" exported="" name="appcompat-v7-18.0.0" level="project" />
     <orderEntry type="module" module-name="osmdroid-android-4.2" exported="" />
     <orderEntry type="module" module-name="slf4j-android-1.6.1-RC1" exported="" />
