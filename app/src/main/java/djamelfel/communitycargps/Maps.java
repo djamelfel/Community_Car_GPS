@@ -17,6 +17,13 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -39,6 +46,10 @@ public class Maps extends Activity implements MapViewConstants, LocationListener
     private IMapController mapController;
     private ToggleButton gpsTButton;
     private Settings settings;
+    private Button settingsMenu;
+    private Button simulation;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +65,7 @@ public class Maps extends Activity implements MapViewConstants, LocationListener
         mapView.setBuiltInZoomControls(true);
         mapView.setMultiTouchControls(true);
         mapView.setMinZoomLevel(7);
+        mapView.setMaxZoomLevel(30);
 
         //limiter la carte uniquement a un seul modele
         //BoundingBoxE6 bbox = new BoundingBoxE6(0.0, 100.0, 0.0, 100.0);
@@ -100,6 +112,9 @@ public class Maps extends Activity implements MapViewConstants, LocationListener
             default:
                 return super.onOptionsItemSelected(item);
         }
+
+        simulation = (Button) findViewById(R.id.simulation);
+        findViewById(R.id.simulation).setOnClickListener(this);
     }
 
     @Override
@@ -122,6 +137,24 @@ public class Maps extends Activity implements MapViewConstants, LocationListener
                 } else {
                     disablePosition();
                 }
+                break;
+            case R.id.simulation:
+
+                LayoutInflater inflater = getLayoutInflater();
+                View layout = inflater.inflate(R.layout.toast_layout, (ViewGroup) findViewById(R.id.toast_layout_root));
+
+                ImageView image = (ImageView) layout.findViewById(R.id.image);
+                image.setImageDrawable(getResources().getDrawable( getResources().getIdentifier("@mipmap/ic_notification_bell", null, getPackageName()) ));
+
+                TextView text = (TextView) layout.findViewById(R.id.text);
+                text.setText("Risque de pluie sur la suite du parcours");
+
+                Toast toast = new Toast(getApplicationContext());
+                toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
+                toast.setDuration(Toast.LENGTH_LONG);
+                toast.setView(layout);
+                toast.show();
+
                 break;
             default:
                 break;

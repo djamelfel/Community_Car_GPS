@@ -20,7 +20,7 @@ public class DisplaySettings extends Activity implements View.OnClickListener{
 
     private Settings settings;
 
-    public void onCreate(Bundle saveInstanceState){
+    public void onCreate(Bundle saveInstanceState) {
         super.onCreate(saveInstanceState);
         setContentView(R.layout.activity_settings);
 
