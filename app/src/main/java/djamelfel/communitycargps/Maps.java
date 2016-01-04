@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+
 import org.osmdroid.api.IMapController;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
@@ -22,13 +23,10 @@ public class Maps extends Activity implements LocationListener, View.OnClickList
     private LocationManager lManager;
     private Location location;
     private IMapController mapController;
-    private String provider;
     private ToggleButton gpsTButton;
-    private ToggleButton providerTButton;
     private Button settingsMenu;
     final String EXTRA_DISTANCE = "distance_voulue";
     private String distance_settings;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,11 +51,6 @@ public class Maps extends Activity implements LocationListener, View.OnClickList
         gpsTButton = (ToggleButton) findViewById(R.id.gps);
         findViewById(R.id.gps).setOnClickListener(this);
 
-        providerTButton = (ToggleButton) findViewById(R.id.provider);
-        providerTButton.setEnabled(false);
-        provider = "network";
-        findViewById(R.id.provider).setOnClickListener(this);
-
         settingsMenu = (Button) findViewById(R.id.settingsMenu);
         findViewById(R.id.settingsMenu).setOnClickListener(this);
 
@@ -77,20 +70,10 @@ public class Maps extends Activity implements LocationListener, View.OnClickList
         switch (v.getId()) {
             case R.id.gps:
                 if(gpsTButton.isChecked()) {
-                    providerTButton.setEnabled(true);
                     enablePosition();
                 } else {
-                    providerTButton.setEnabled(false);
                     disablePosition();
                 }
-                break;
-            case R.id.provider:
-                if(providerTButton.getText().equals("Network")) {
-                    provider = "network";
-                } else {
-                    provider = "gps";
-                }
-                enablePosition();
                 break;
             case R.id.settingsMenu:
                 Intent intent = new Intent(Maps.this, DisplaySettings.class);
@@ -103,7 +86,7 @@ public class Maps extends Activity implements LocationListener, View.OnClickList
     }
 
     private void enablePosition() {
-        lManager.requestLocationUpdates(provider, 30000, 0, this);
+        lManager.requestLocationUpdates("network", 30000, 0, this);
     }
 
     private void disablePosition() {
