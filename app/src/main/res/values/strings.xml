@@ -27,4 +27,5 @@
     <string name="login">Login</string>
     <string name="setting">Settings</string>
     <string name="error_incorrect_login">Le login est incorrect</string>
+    <string name="author">developpeur : Djamel Fellah et Benjamin Schmit</string>
 </resources>
