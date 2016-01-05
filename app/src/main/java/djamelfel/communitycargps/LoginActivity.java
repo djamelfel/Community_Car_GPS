@@ -41,7 +41,7 @@ public class LoginActivity extends ActionBarActivity { //implements LoaderCallba
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private UserLoginTask mSimpleAuthTask = null;
+    //private UserLoginTask mSimpleAuthTask = null;
     private UserLoginPostgresql mAuthTask = null;
 
     // UI references.
@@ -119,7 +119,7 @@ public class LoginActivity extends ActionBarActivity { //implements LoaderCallba
             focusView = mPasswordView;
             cancel = true;
         } else if (!isPasswordValid(password)) {
-            mPasswordView.setError(getString(R.string.error_invalid_password));
+            mPasswordView.setError(getString(R.string.error_short_password));
             focusView = mPasswordView;
             cancel = true;
         }
@@ -133,14 +133,14 @@ public class LoginActivity extends ActionBarActivity { //implements LoaderCallba
             // perform the user login attempt.
             showProgress(true);
 
-
+            /*
             mSimpleAuthTask = new UserLoginTask(login, password);
             mSimpleAuthTask.execute((Void) null);
-            /*
+            */
             UserLoginPostgresql mAuthTask = new UserLoginPostgresql(Integer.parseInt(login),
                     password);
             mAuthTask.execute();
-            */
+
         }
     }
 
@@ -281,29 +281,37 @@ public class LoginActivity extends ActionBarActivity { //implements LoaderCallba
         protected Boolean doInBackground(Void... params) {
             try {
                 Class.forName("org.postgresql.Driver");
-                String url = "jdbc:postgresql://192.168.0.14:5432/bus_can";
-                String user = "postgres";
+                String url = "jdbc:postgresql://192.168.0.14:5432/postgres";
+                String user = "djamel";
                 String password = "bus_can";
-                Log.d("LOG_TAG", "Connexion ...  !");
+                Boolean cancel = null;
+
                 Connection conn = DriverManager.getConnection(url, user, password);
-                Log.d("LOG_TAG", "... effective !");
+
                 Statement st = conn.createStatement();
                 ResultSet rs = st.executeQuery("Select * from \"Users\"");
 
-                //TODO: Verifier que les donnees saisies sont compatible avec ceux de la bdd
                 while(rs.next()) {
-                    Log.d("LOG_TAG", rs.getString(1) + " " + mLogin);
-                    Log.d("LOG_TAG", rs.getString(2) + " " + mPassword);
+                    if (Integer.parseInt(rs.getString(1)) == mLogin) {
+                        if (mPassword.equals(rs.getString(4)))
+                            cancel = true;
+                        else
+                            cancel = false;
+                    }
                 }
 
-                rs.close();
-                st.close();
                 conn.close();
-            } catch(Exception e) {
+                st.close();
+                rs.close();
+
+                if (cancel == null)
+                    return false;
+                return cancel;
+            }
+            catch(Exception e) {
                 Log.d("LOG_TAG", "Failure " + e.getMessage() );
                 return false;
             }
-            return true;
         }
 
         @Override
