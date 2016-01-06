@@ -12,7 +12,9 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -33,6 +35,11 @@ import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.util.constants.MapViewConstants;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 public class Maps extends Activity implements MapViewConstants, LocationListener, View
@@ -125,21 +132,7 @@ public class Maps extends Activity implements MapViewConstants, LocationListener
                     disablePosition();
                 break;
             case R.id.simulation:
-                LayoutInflater inflater = getLayoutInflater();
-                View layout = inflater.inflate(R.layout.toast_layout, (ViewGroup) findViewById(R.id.toast_layout_root));
-
-                ImageView image = (ImageView) layout.findViewById(R.id.image);
-                image.setImageDrawable(getResources().getDrawable( getResources().getIdentifier
-                        ("@mipmap/ic_notification_bell", null, getPackageName()) ));
-
-                TextView text = (TextView) layout.findViewById(R.id.text);
-                text.setText("Risque de pluie sur la suite du parcours");
-
-                Toast toast = new Toast(getApplicationContext());
-                toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
-                toast.setDuration(Toast.LENGTH_LONG);
-                toast.setView(layout);
-                toast.show();
+                new UserLoginPostgresql().execute();
 
                 break;
             default:
@@ -217,6 +210,83 @@ public class Maps extends Activity implements MapViewConstants, LocationListener
                 pisteX = pt.x-rec.left;
                 pisteY = pt.y - rec.top;
                 pC.drawCircle(pisteX, pisteY, 15, lp3);
+            }
+        }
+    }
+
+    /**
+     * Represents an asynchronous login/registration task used to authenticate
+     * the user.
+     */
+    public class UserLoginPostgresql extends AsyncTask<Void, Void, Void> {
+
+        Connection conn;
+        Statement st;
+        ResultSet rs;
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            try {
+                Class.forName("org.postgresql.Driver");
+                /**
+                 * Adresse IP/user/mot de passe a modifier en statique en fonction de la base de
+                 * données
+                 */
+                String url = "jdbc:postgresql://192.168.0.14:5432/postgres";
+                String user = "djamel";
+                String password = "bus_can";
+
+                conn = DriverManager.getConnection(url, user, password);
+
+                st = conn.createStatement();
+                rs = st.executeQuery("SELECT \"DonneesVoiture\".\"Id\", \"Users\"" +
+                        ".\"Prenom\", \"Users\".\"Ville\", \"DonneesVoiture\".\"posx\", " +
+                        "\"DonneesVoiture\".\"posy\", \"DonneesVoiture\".\"timestamp\", " +
+                        "\"DonneesVoiture\".\"IdentifiantCommande\", \"DonneesVoiture\"" +
+                        ".\"Valeur\" FROM \"DonneesVoiture\" inner join \"Users\" on \"DonneesVoiture\"" +
+                        ".\"IdUser\" = \"Users\".\"Id\" order by \"Id\" desc limit 1;");
+                rs.next();
+            }
+            catch(Exception e) {
+                Log.d("LOG_TAG", "Failure " + e.getMessage() );
+                return null;
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            LayoutInflater inflater = getLayoutInflater();
+            View layout = inflater.inflate(R.layout.toast_layout, (ViewGroup) findViewById(R.id.toast_layout_root));
+
+            ImageView image = (ImageView) layout.findViewById(R.id.image);
+            image.setImageDrawable(getResources().getDrawable(getResources().getIdentifier
+                    ("@mipmap/ic_notification_bell", null, getPackageName())));
+
+            TextView text = (TextView) layout.findViewById(R.id.text);
+
+            try {
+                String message = "L'utilisateur: " + rs.getString(2) + " positionné à " + rs
+                        .getString(3) + "(" +rs.getString(4) + "," + rs.getString(5) + ") le " +
+                        rs.getString(6) + " à obtenu pour "  + rs.getString(7) +
+                        " la valeur suivante " + rs.getString(8);
+                text.setText(message);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            Toast toast = new Toast(getApplicationContext());
+            toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
+            toast.setDuration(Toast.LENGTH_LONG);
+            toast.setView(layout);
+            toast.show();
+
+            try {
+                conn.close();
+                st.close();
+                rs.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         }
     }

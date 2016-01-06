@@ -200,7 +200,7 @@ public class LoginActivity extends ActionBarActivity {
                  * Adresse IP/user/mot de passe a modifier en statique en fonction de la base de
                  * données
                  */
-                String url = "jdbc:postgresql://172.18.20.168:5432/postgres";
+                String url = "jdbc:postgresql://192.168.0.14:5432/postgres";
                 String user = "djamel";
                 String password = "bus_can";
                 Boolean cancel = null;
@@ -209,7 +209,7 @@ public class LoginActivity extends ActionBarActivity {
 
                 Statement st = conn.createStatement();
                 ResultSet rs = st.executeQuery("Select * from \"Users\"");
-                Log.d("LOG_TAG", "success");
+
                 while(rs.next()) {
                     if (Integer.parseInt(rs.getString(1)) == mLogin) {
                         if (mPassword.equals(rs.getString(4)))
